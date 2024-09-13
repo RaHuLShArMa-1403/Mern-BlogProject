@@ -1,115 +1,98 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const post = require('../models/post');
+const post = require("../models/post");
 
-router.get('' ,async(req , res)=>{
-    try{
-        const locals = {
-            title : "Node Blog",
-            description :"simple blog created"
-        }
+router.get("/", async (req, res) => {
+  try {
+    const locals = {
+      title: "Node Blog",
+      description: "simple blog created",
+    };
 
-        let perPage = 10;
-        let page = req.query.page || 1;
-        const data =await post.aggregate([{$sort:{createdAt :-1} } ])
-        .skip(perPage * page - perPage)
-        .limit(perPage)
-        .exec();
+    let perPage = 5;
+    let page = parseInt(req.query.page) || 1; // Extract page number from URL
 
-        const count = await post.countDocuments();
-        const nextPage = parseInt(page) +1;
-        const hasNextPage = nextPage <= Math.ceil(count/perPage);
+    const data = await post
+      .aggregate([{ $sort: { createdAt: -1 } }])
+      .skip(perPage * (page - 1))
+      .limit(perPage)
+      .exec();
 
+    const count = await post.countDocuments();
+    const nextPage = page + 1;
+    const hasNextPage = nextPage <= Math.ceil(count / perPage);
 
-
-        
-        res.render('index' , {locals ,
-            data,
-            current :page,
-            nextPage : hasNextPage ? nextPage :null,
-            currentRoute : '/'
-        });
-    
-    }catch (error) {
-        console.log(error);
-    }
-    
+    res.render("index", {
+      locals,
+      data,
+      current: page,
+      nextPage: hasNextPage ? nextPage : null,
+      currentRoute: "/",
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
-
 
 // router.get('' ,async(req , res)=>{
 //     const locals = {
 //         title : "Node Blog",
 //         description :"simple blog created"
 //     }
-    
+
 //     try{
 //         const data = await post.find();
 //         res.render('index' , {locals , data});
-    
+
 //     }catch (error) {
 //         console.log(error);
 //     }
-    
-// });
 
+// });
 
 // get and post
 
-router.get('/post/:id' ,async(req , res)=>{
-
-    
-    try{
-        let slug = req.params.id;
-        const data = await post.findById({_id :slug});
-        const locals = {
-            title : data.title,
-            description :"simple blog created"
-        }
-        res.render('post' , {locals , data , currentRoute :`/post/${slug}`});
-    
-    }catch (error) {
-        console.log(error);
-    }
-    
+router.get("/post/:id", async (req, res) => {
+  try {
+    let slug = req.params.id;
+    const data = await post.findById({ _id: slug });
+    const locals = {
+      title: data.title,
+      description: "simple blog created",
+    };
+    res.render("post", { locals, data, currentRoute: `/post/${slug}` });
+  } catch (error) {
+    console.log(error);
+  }
 });
-
 
 // post
 //post - searchterm
 
-router.post('/search' ,async(req , res)=>{
-    
-    
-    try{
-        const locals = {
-            title : "Search",
-            description :"simple blog created"
-        }
+router.post("/search", async (req, res) => {
+  try {
+    const locals = {
+      title: "Search",
+      description: "simple blog created",
+    };
 
-        let searchTerm = req.body.searchTerm;
-        const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "")
-        const data = await post.find({
-            $or :[
-                { title: {$regex :new RegExp(searchNoSpecialChar, 'i')}},
-                {body : {$regex : new RegExp(searchNoSpecialChar , 'i')}}
-
-            ]
-        });
-        res.render("search" , {
-            data,
-            locals,
-            currentRoute:'/'
-        });
-    
-    }catch (error) {
-        console.log(error);
-    }
-    
+    let searchTerm = req.body.searchTerm;
+    const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "");
+    const data = await post.find({
+      $or: [
+        { title: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+        { body: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+      ],
+    });
+    res.render("search", {
+      data,
+      locals,
+      currentRoute: "/",
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
-
-
-
 
 // function insertPostData () {
 //   Post.insertMany([
@@ -158,17 +141,8 @@ router.post('/search' ,async(req , res)=>{
 
 // insertPostData();
 
-
-
-
-
-
-
-
-
-router.get('/about' , (req, res)=>{
-    res.render('about');
+router.get("/about", (req, res) => {
+  res.render("about");
 });
-
 
 module.exports = router;
