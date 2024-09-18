@@ -10,6 +10,8 @@ const MongoStore = require("connect-mongo");
 const connectDB = require("./server/config/db");
 const { isActiveRoute } = require("./server/helpers/routeHelpers");
 
+const favicon = require("serve-favicon");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -20,6 +22,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
+
+app.use(favicon(__dirname + "/public/img/blog-logo.png"));
 
 app.use(
   session({
